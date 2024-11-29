@@ -20,19 +20,44 @@ firstResult = arxivEntries[0]
 #     author_str = author.text.lstrip("\n").rstrip("\n")
 #     author_list.append(author_str)
 
+# author_list = [a.text for a in firstResult.find_all("name")]
+# title = firstResult.find("title").text
+# abstract = firstResult.find("summary").text
+#
+# data_dict = {}
+# data_dict["author_list"] = author_list
+# data_dict["title"] = title
+# data_dict["abstract"] = abstract
 
-author_list = [a.text for a in firstResult.find_all("name")]
-title = firstResult.find("title").text
-title_tag = "TITLE"
-author_tag = "AUTHOR"
+# title_tag = "TITLE"
+# author_tag = "AUTHOR"
 
-print(f"{title_tag:<15}: {title}")
-full_author_list = " | ".join(author_list)
-print(f"{author_tag:<15}: {full_author_list}")
+# print("TITLE: {0}".format(data_dict["title"]))
 
-# author_list = []
-# for author in firstResult.find_all("name"):
-#     author_str = author.text
-#     author_list.append(author_str)
 
-# print(author_list)
+def format_bs_entry(bsentry: bs4.element.Tag) -> dict:
+    """Format an entry of a BS result
+
+    This function process a BS entry and outputs a dictionary with
+    title, author list and abstract.
+
+    Arguments
+    ---------
+    bsentry
+        A BS entry result to be processed
+    """
+
+    author_list = [name.text for name in bsentry.find_all("name")]
+    title = bsentry.find("title").text
+    abstract = bsentry.find("summary").text
+
+    data_dict = {}
+    data_dict["author_list"] = author_list
+    data_dict["title"] = title
+    data_dict["abstract"] = abstract
+
+    return data_dict
+
+
+res_dict = format_bs_entry(firstResult)
+print(res_dict)
