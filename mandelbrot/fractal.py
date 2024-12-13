@@ -91,20 +91,39 @@ def compute_mandelbrot(pilImage: Image.Image,
     return None
 
 
-image = make_canvas(1200, 1200)
-(coords, canv1d) = make_coords_pixel_arrays(image)
-compute_mandelbrot(image, coords, canv1d, 200, colorise='colormap')
+def compute_julia(pilImage: Image.Image,
+                  coords: list,
+                  canvas1d: list,
+                  c: complex = 1. + 1. * 1j,
+                  max_iterations: int = 200
+                  ) -> None:
+    """
+    """
 
-image.show()
+    width = pilImage.width
+    height = pilImage.height
 
-    # zp = z * z + c
-    # iter = 0
-    # while abs(zp) <= 2:
-    #     zp = z * z + c
-    #     iter += 1
-        
-# 2D approach
-# for y in range(height):
-#     yc = -2. + deltay * y
-#     row = [(-2. + deltax * x) + yc * 1j for x in range(width)]
-#     coords.append(row)
+    # mandelbrot = [1 for i in range(width * height)]
+    julia = [1] * (width * height)
+    for i in range(len(coords)):
+        z = coords[i]
+        iter = 0
+        while abs(z) <= 2 and iter <= max_iterations:
+            zp = z * z + c
+            iter += 1
+            z = zp
+
+        shade = int(255 * (1 - iter / max_iterations))
+        color = (shade, shade, shade)
+        pilImage.putpixel(canvas1d[i], color)
+
+    return None
+
+
+
+if __name__ == '__main__':
+
+    image = make_canvas(100, 100)
+    (coords, canv1d) = make_coords_pixel_arrays(image)
+    compute_mandelbrot(image, coords, canv1d, 200, colorise='colormap')
+    image.show()
