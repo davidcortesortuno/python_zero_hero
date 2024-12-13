@@ -1,4 +1,5 @@
 from PIL import Image
+import matplotlib.cm as cm
 
 max_iterations = 100
 
@@ -44,8 +45,22 @@ def make_coords_pixel_arrays(pilImage: Image.Image) -> tuple[list, list]:
 def compute_mandelbrot(pilImage: Image.Image,
                        coords: list,
                        canvas1d: list,
-                       max_iterations: int) -> None:
+                       max_iterations: int,
+                       colorise: str ='grey'
+                       ) -> None:
     """
+    Arguments
+    ---------
+    pilImage
+        xxxx
+    coords
+        1D list with coordinates
+    canvas1d
+        1D list with corresponding pixel coordinates in PIL canvas
+    max_iterations
+        Max number of iterations per pixel to compute mandelbrot set
+    colorise
+        string with two options: 'grey' or 'colormap'
     """
 
     width = pilImage.width
@@ -62,8 +77,15 @@ def compute_mandelbrot(pilImage: Image.Image,
                 break
             z = zp
 
-        tone = int(255 * (1 - iter / max_iterations))
-        color = (tone, tone, tone)
+        if colorise == 'grey':
+            tone = int(255 * (1 - iter / max_iterations))
+            color = (tone, tone, tone)
+        elif colorise == 'colormap':
+            color = cm.magma_r(iter / max_iterations, bytes=True)
+        else:
+            # raise Exception('color needs to be one of two options: grey or colormap')
+            raise ValueError('colorise needs to be one of two options: grey or colormap')
+
         pilImage.putpixel(canvas1d[i], color) 
 
     return None
@@ -71,7 +93,7 @@ def compute_mandelbrot(pilImage: Image.Image,
 
 image = make_canvas(1200, 1200)
 (coords, canv1d) = make_coords_pixel_arrays(image)
-compute_mandelbrot(image, coords, canv1d, 200)
+compute_mandelbrot(image, coords, canv1d, 200, colorise='colormap')
 
 image.show()
 
