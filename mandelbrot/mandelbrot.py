@@ -62,13 +62,9 @@ def compute_mandelbrot(pilImage: Image.Image,
                 break
             z = zp
 
-    for i, pix in enumerate(canvas1d):
-        if mandelbrot[i] == 1:
-            color = (255, 0, 0)
-        else:
-            color = (255, 255, 255)
-
-        pilImage.putpixel(pix, color) 
+        tone = int(255 * (1 - iter / max_iterations))
+        color = (tone, tone, tone)
+        pilImage.putpixel(canvas1d[i], color) 
 
     return None
 
