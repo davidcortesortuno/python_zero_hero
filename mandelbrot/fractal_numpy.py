@@ -12,13 +12,17 @@ def make_canvas(width: int = 1000, height: int = 1000) -> Image.Image:
 
 
 
-def make_coords_pixel_arrays(pilImage: Image.Image) -> tuple[np.ndarray, list]:
+def make_coords_pixel_arrays(pilImage: Image.Image) -> np.ndarray:
     """Create 1D arrays for complex coords and pixels
 
     Arguments
     ---------
     width, height
         integers with width and height
+
+    Returns
+    -------
+    A tuple with 2 numpy arrays: coordinates and canvas
     """
     width = pilImage.width
     height = pilImage.height
@@ -37,19 +41,16 @@ def make_coords_pixel_arrays(pilImage: Image.Image) -> tuple[np.ndarray, list]:
     coords = X + Y * 1j  # 2D
     coords.shape = -1  # flat to 1D
 
-    # canvas1d = [(x, y) for y in range(height) for x in range(width)]
+    return coords
 
-    return coords, canvas1d
-    
 # canvas1d = []
 # for y in range(height):
 #     for x in range(width):
 #         canvas1d.append((x, y))
 
 def compute_mandelbrot(pilImage: Image.Image,
-                       coords: list,
-                       canvas1d: list,
-                       max_iterations: int,
+                       coords: np.ndarray,
+                       max_iterations : int = 100,
                        colorise: str ='grey'
                        ) -> None:
     """
@@ -59,8 +60,6 @@ def compute_mandelbrot(pilImage: Image.Image,
         xxxx
     coords
         1D list with coordinates
-    canvas1d
-        1D list with corresponding pixel coordinates in PIL canvas
     max_iterations
         Max number of iterations per pixel to compute mandelbrot set
     colorise
@@ -69,15 +68,14 @@ def compute_mandelbrot(pilImage: Image.Image,
 
     width = pilImage.width
     height = pilImage.height
+    # NOTE: coords array has dimensions = width x height
 
-    # mandelbrot = [1 for i in range(width * height)]
-    mandelbrot = [1] * (width * height)
     for i, c in enumerate(coords):
         z = 0.0 + 0.0 * 1j
+
         for iter in range(max_iterations):
             zp = z * z + c
             if abs(zp) >= 2:
-                mandelbrot[i] = 0  # point c not in Mset
                 break
             z = zp
 
@@ -90,44 +88,19 @@ def compute_mandelbrot(pilImage: Image.Image,
             # raise Exception('color needs to be one of two options: grey or colormap')
             raise ValueError('colorise needs to be one of two options: grey or colormap')
 
-        pilImage.putpixel(canvas1d[i], color) 
+        # coords_ij = i + width * j
+        pixel_col = i % width
+        pixel_row = i // width 
+
+        pilImage.putpixel((pixel_col, pixel_row), color) 
 
     return None
-
-
-def compute_julia(pilImage: Image.Image,
-                  coords: list,
-                  canvas1d: list,
-                  c: complex = 1. + 1. * 1j,
-                  max_iterations: int = 200
-                  ) -> None:
-    """
-    """
-
-    width = pilImage.width
-    height = pilImage.height
-
-    # mandelbrot = [1 for i in range(width * height)]
-    julia = [1] * (width * height)
-    for i in range(len(coords)):
-        z = coords[i]
-        iter = 0
-        while abs(z) <= 2 and iter <= max_iterations:
-            zp = z * z + c
-            iter += 1
-            z = zp
-
-        shade = int(255 * (1 - iter / max_iterations))
-        color = (shade, shade, shade)
-        pilImage.putpixel(canvas1d[i], color)
-
-    return None
-
 
 
 if __name__ == '__main__':
 
-    image = make_canvas(100, 100)
-    (coords, canv1d) = make_coords_pixel_arrays(image)
-    compute_mandelbrot(image, coords, canv1d, 200, colorise='colormap')
-    image.show()
+    image = make_canvas(500, 500)
+    coords = make_coords_pixel_arrays(image)
+    # compute_mandelbrot(image, coords, 200, colorise='colormap')
+    compute_mandelbrot(image, coords, max_iterations=100)
+    image.save('test_fn.png')
