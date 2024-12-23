@@ -60,15 +60,16 @@ def compute_mandelbrot_numba_parallel(npImage: np.ndarray,
     """
 
     width = npImage.shape[1]
+    print('Using number of threads: ', numba.get_num_threads())
+    print('Number of coordinates:', coords.shape[0])
 
     for i in numba.prange(coords.shape[0]):
         z = 0.0 + 0.0 * 1j
         c = coords[i]
         for iter in range(max_iterations):
-            zp = z * z + c
-            if abs(zp) >= 2:
+            if abs(z) >= 2:
                 break
-            z = zp
+            z = z**2 + c
 
         # coords_ij = i + width * j
         pixel_col = i % width
@@ -203,13 +204,18 @@ def compute_mandelbrot_vectorized(npImage: np.ndarray,
 
 if __name__ == '__main__':
 
-    image = make_canvas(3000, 3000)  # create numpy array canvas
+    image = make_canvas(8000, 8000)  # create numpy array canvas
     coords = make_coords_pixel_arrays(image)
     # compute_mandelbrot(image, coords, 200, colorise='colormap')
     # compute_mandelbrot_numba(image, coords, max_iterations=200)
     # compute_mandelbrot_numba_parallel.parallel_diagnostics(level=4)
-    # compute_mandelbrot_numba_parallel(image, coords, max_iterations=200)
-    compute_mandelbrot_vectorized(image, coords, max_iterations=200)
+
+    numba.set_num_threads(4)
+    compute_mandelbrot_numba_parallel(image, coords, max_iterations=200)
+    plt.imsave(fname='test_parallel.png', arr=image, cmap='magma_r', format='png')
+
+    # compute_mandelbrot_vectorized(image, coords, max_iterations=200)
+    # plt.imsave(fname='test_vectorized.png', arr=image, cmap='magma_r', format='png')
 
     # f, ax = plt.subplots()
     # # ax.imshow(image, cmap='plasma', origin='lower')
@@ -217,4 +223,4 @@ if __name__ == '__main__':
     # plt.show()
 
     # Save image array directly using pyplot
-    plt.imsave(fname='test_parallel.png', arr=image, cmap='magma_r', format='png')
+    # plt.imsave(fname='test_parallel.png', arr=image, cmap='magma_r', format='png')
